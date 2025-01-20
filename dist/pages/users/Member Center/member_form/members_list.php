@@ -65,7 +65,6 @@ if (!empty($search_query) && !empty($search_type)) {
             break;
     }
 }
-
 // 執行 SQL 查詢
 $result = mysqli_query($link, $sql);
 
@@ -73,7 +72,10 @@ $result = mysqli_query($link, $sql);
 if (!$result) {
     die("查詢失敗: " . mysqli_error($link));
 }
+
 ?>
+
+
 
 
 <?php
@@ -193,10 +195,10 @@ if (!isset($_SESSION['login_session']) || $_SESSION['login_session'] !== true) {
                     <!--begin::Row-->
                     <div class="row">
                         <div class="col-sm-6">
-                            <ol class="breadcrumb float-sm-end">
-                                <li class="breadcrumb-item"><a href="#">Home</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">breadcrumb</li>
-                            </ol>
+                        <ol class="breadcrumb float-sm-end">
+                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">breadcrumb</li>
+                        </ol>
                         </div>
                     </div>
                     <!--end::Row-->
@@ -216,8 +218,6 @@ if (!isset($_SESSION['login_session']) || $_SESSION['login_session'] !== true) {
         <!-- 搜尋表單 -->
         <div class="search-box">
             <form method="GET" action="members_list.php">
-                <input type="text" name="search" placeholder="輸入搜尋內容" value="<?php echo htmlspecialchars($search_query); ?>">
-
                 <select name="search_type">
                     <option value="">選擇搜尋類型</option>
                     <option value="email" <?php if ($search_type == 'email') echo 'selected'; ?>>Email</option>
@@ -225,14 +225,14 @@ if (!isset($_SESSION['login_session']) || $_SESSION['login_session'] !== true) {
                     <option value="phone" <?php if ($search_type == 'phone') echo 'selected'; ?>>電話</option>
                     <option value="address" <?php if ($search_type == 'address') echo 'selected'; ?>>地址</option>
                 </select>
+                <input type="text" name="search" placeholder="輸入搜尋內容" value="<?php echo htmlspecialchars($search_query); ?>">
 
                 <input type="submit" value="搜尋">
             </form>
         </div>
-
+        <!-- 顯示搜尋結果 -->
         <table>
             <thead>
-                <tr>
                     <th>會員ID</th>
                     <th>會員Email</th>
                     <th>密碼</th>
@@ -243,9 +243,10 @@ if (!isset($_SESSION['login_session']) || $_SESSION['login_session'] !== true) {
                     <th>等級</th>
                     <th>頭像</th>
                     <th>操作</th>
-                </tr>
+                </>
             </thead>
             <tbody>
+
                 <?php
                 // 使用 while 迴圈來提取每一行數據並顯示在表格中
                 while ($row = mysqli_fetch_assoc($result)) {
@@ -296,26 +297,120 @@ if (!isset($_SESSION['login_session']) || $_SESSION['login_session'] !== true) {
         <?php include ROOT_PATH . 'dist/pages/parts/footer.php' ?>
         <!--end::Footer-->
     </div>
-    <!--end::App Wrapper-->
-
-    <!--begin::Script-->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="<?= ROOT_URL ?>/dist/js/adminlte.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebarWrapper = document.querySelector('.sidebar-wrapper');
-            if (sidebarWrapper && typeof OverlayScrollbarsGlobal?.OverlayScrollbars !== 'undefined') {
-                OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
-                    scrollbars: {
-                        theme: 'os-theme-light',
-                        autoHide: 'leave',
-                        clickScroll: true,
-                    },
-                });
-            }
+    </div>
+   <!--end::App Wrapper-->
+  <!--begin::Script-->
+  <script>
+    const deleteOne = e => {
+      e.preventDefault(); //取消超連結導向
+      const tr = e.target.closest('tr');
+      const [, td_id, td_name] = tr.querySelectorAll('td'); //陣列的解構賦值
+      const id = parseInt(td_id.innerHTML);
+      const name = td_name.innerHTML;
+      console.log('刪除', id, name);
+      if (confirm(`是否要刪除編號為 ${id} 名字為 ${name} 的資料?`)) {
+        // 使用javascript做跳轉頁面
+        location.href = `pet-del.php?id=${id}`;
+      }
+    }
+  </script>
+  <!--begin::Third Party Plugin(OverlayScrollbars) 可自定義的覆蓋滾動條-->
+  <script
+    src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.10.1/browser/overlayscrollbars.browser.es6.min.js"
+    integrity="sha256-dghWARbRe2eLlIJ56wNB+b760ywulqK3DzZYEpsg2fQ="
+    crossorigin="anonymous"></script>
+  <!--end::Third Party Plugin(OverlayScrollbars)-->
+  <!--begin::Required Plugin(Bootstrap 5)-->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!--end::Required Plugin(Bootstrap 5)-->
+  <!--begin::Required Plugin(AdminLTE)-->
+  <script src="<?= ROOT_URL ?>dist/js/adminlte.js"></script>
+  <!--end::Required Plugin(AdminLTE)-->
+  <!--begin::OverlayScrollbars Configure 設定滾動條-->
+  <script>
+    const SELECTOR_SIDEBAR_WRAPPER = '.sidebar-wrapper';
+    const Default = {
+      // 當鼠標離開滾動區域時，滾動條會自動隱藏；允許用戶通過點擊滾動條來進行滾動
+      scrollbarTheme: 'os-theme-light',
+      scrollbarAutoHide: 'leave',
+      scrollbarClickScroll: true,
+    };
+    // DOMContentLoaded確保在DOM完全加載後執行代碼
+    document.addEventListener('DOMContentLoaded', function() {
+      const sidebarWrapper = document.querySelector(SELECTOR_SIDEBAR_WRAPPER);
+      if (sidebarWrapper && typeof OverlayScrollbarsGlobal?.OverlayScrollbars !== 'undefined') {
+        // 初始化滾動條，並傳遞配置選項，如主題和自動隱藏行為
+        OverlayScrollbarsGlobal.OverlayScrollbars(sidebarWrapper, {
+          scrollbars: {
+            theme: Default.scrollbarTheme,
+            autoHide: Default.scrollbarAutoHide,
+            clickScroll: Default.scrollbarClickScroll,
+          },
         });
-    </script>
-    <!--end::Script-->
+      }
+    });
+  </script>
+  <?php
+  // 如果有設定標誌就顯示alert
+  if (isset($_SESSION['show_alert']) && $_SESSION['show_alert']) {
+    echo "<script>
+            window.onload = function() {
+                alert('已刪除編號: ' + {$_SESSION['deleted_id']} + ' ' + '{$_SESSION['deleted_name']}');
+            }
+          </script>";
+    unset($_SESSION['show_alert']); // 使用後清除標誌
+    unset($_SESSION['deleted_id']); // 清除 id
+    unset($_SESSION['deleted_name']); // 清除 name
+  }
+  ?>
+  <!--end::OverlayScrollbars Configure-->
+  <!-- OPTIONAL SCRIPTS 額外功能&實作-->
+  <!-- 排序功能 -->
+  <script>
+    document.querySelectorAll('th a').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const url = new URL(this.href);
+        const sort = url.searchParams.get('sort');
+        const order = url.searchParams.get('order');
+
+        // 更新所有圖示為預設狀態
+        document.querySelectorAll('th a i').forEach(icon => {
+          icon.className = 'fa-solid fa-arrows-up-down';
+        });
+
+        // 更新當前列的圖示
+        if (order === 'asc') {
+          this.querySelector('i').className = 'fa-solid fa-solid fa-arrow-up-short-wide';
+        } else {
+          this.querySelector('i').className = 'fa-solid fa-arrow-down-wide-short';
+        }
+
+        // 添加排序參數到當前URL並跳轉
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('sort', sort);
+        currentUrl.searchParams.set('order', order);
+        window.location.href = currentUrl.toString();
+      });
+    });
+  </script>
+  <script>
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var formData = new FormData(this);
+      var searchParams = new URLSearchParams();
+
+      for (var pair of formData.entries()) {
+        if (pair[1].trim() !== '') {
+          searchParams.append(pair[0], pair[1]);
+        }
+      }
+
+      var queryString = searchParams.toString();
+      window.location.href = window.location.pathname + (queryString ? '?' + queryString : '');
+    });
+  </script>
+  <!--end::Script-->
 </body>
 <!--end::Body-->
 
